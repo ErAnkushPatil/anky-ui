@@ -14,6 +14,18 @@ Requires React and React DOM 18 or 19. The only runtime dependency is `@floating
 import { GhostInput, InlineDiff, SelectionPalette, useOptimisticAIState } from "@erankushpatil/anky-ui";
 ```
 
+## Use cases
+
+Use it when AI should edit or suggest text where the user is already working, instead of in a separate chat window.
+
+- **Docs, notes, wikis and CMS editors:** select text, pick "Shorten" or "Fix grammar", review the diff, accept.
+- **Email, support and CRM replies:** ghost-text suggestions as the user types, accepted with Tab.
+- **Product descriptions, listings and marketing copy:** rewrite and compare with the original before saving.
+- **Rich-text editors:** the same palette and diff inside Tiptap, ProseMirror or Lexical.
+- **Text that needs human sign-off:** every AI change is approved explicitly and can be undone.
+
+It is not a chat UI. Use a chat library for a chat window and Anky UI for inline edits; they work side by side. Already on the Vercel AI SDK? Pass its response to `providerTextStream(response, "ai-sdk")` and keep your backend.
+
 ## What's included
 
 | Export | Purpose |
