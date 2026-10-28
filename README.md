@@ -15,8 +15,24 @@ Headless by default, Tailwind-ready, zero runtime dependencies besides `@floatin
 - Optimistic AI state with rollback, undo/redo history and accept/reject
 - Copy-paste distribution via CLI in the shadcn style: `npx anky-ui add ...`
 
+## Use cases
+
+Use Anky UI when AI should edit or suggest text where the user is already working, instead of in a separate chat window.
+
+| Use case | What the user does | Use |
+| --- | --- | --- |
+| Docs, notes, wikis and CMS editors | Selects a paragraph, picks "Shorten" or "Fix grammar", reviews the diff, accepts | `SelectionPalette`, `InlineDiff`, `useOptimisticAIState` |
+| Email, support and CRM replies | Starts typing and accepts the grey suggestion with Tab | `GhostInput` |
+| Product descriptions, listings and marketing copy | Rewrites copy and compares it with the original before saving | `SelectionPalette`, `InlineDiff` |
+| Rich-text editors | Gets the same palette and diff inside Tiptap, ProseMirror or Lexical | [Editor adapters](#editor-adapters), `useEditorAnchor` |
+| Long-form fields (bios, job posts, bug reports) | Gets autocomplete in any textarea | `GhostInput` |
+| Text that needs human sign-off (legal, HR, compliance) | Approves every AI change explicitly, with undo | `InlineDiff`, `useOptimisticAIState` |
+
+Anky UI is not a chat UI. For a chat window, use a chat library and add Anky UI for inline edits; they work side by side.
+
 ## Contents
 
+- [Use cases](#use-cases)
 - [Install](#install)
 - [Quick start](#quick-start)
 - [Components](#components)
@@ -466,6 +482,10 @@ Issues and pull requests are welcome at [github.com/ErAnkushPatil/anky-ui](https
 ## FAQ
 
 **Do I need a specific AI provider?** No. Anky UI only consumes a text stream (raw or SSE). Use any model behind your own endpoint.
+
+**Does it replace the Vercel AI SDK?** No, they work together. The AI SDK calls the model and streams the response; Anky UI renders that stream inline. Pass an AI SDK response to `providerTextStream(response, "ai-sdk")` (see [Provider streaming recipes](#provider-streaming-recipes)), so you keep your existing backend.
+
+**Is it a chat UI?** No. Anky UI is for AI inside your existing text: selections, inline diffs and autocomplete. Use a chat library for a chat window; both can live in the same app.
 
 **Does it need Tailwind?** No. Tailwind presets are optional, and the CLI copies unstyled components.
 
