@@ -440,13 +440,24 @@ The workspace root is the publishable `anky-ui` CLI package. `packages/cli` is i
 
 ### Releasing
 
-```bash
-pnpm verify
-pnpm --filter @erankushpatil/anky-ui publish   # the library
-pnpm publish                                   # the anky-ui CLI
-```
+1. Bump `version` in `package.json` and `packages/core/package.json`, and add an entry to [CHANGELOG.md](./CHANGELOG.md). The CLI copies the library's source, so release both together.
+2. Verify, commit, tag and push. `pnpm publish` refuses to run on an unpushed or dirty branch.
 
-Bump `version` in `package.json` and `packages/core/package.json` first. The CLI copies the library's source, so release both together.
+   ```bash
+   pnpm verify
+   git commit -am "Release vX.Y.Z" && git tag -a vX.Y.Z -m "vX.Y.Z" && git push --follow-tags
+   ```
+
+3. Publish the library first, then the CLI:
+
+   ```bash
+   pnpm --filter @erankushpatil/anky-ui publish
+   pnpm publish
+   ```
+
+4. Approve the release. npm uses [staged publishing](https://docs.npmjs.com/staged-publishing): the new version stays hidden until a maintainer approves it with 2FA. Run `pnpm stage approve` (it lets you pick the staged versions), or approve them under **Staged Packages** on npmjs.com. Check with `npm view @erankushpatil/anky-ui version`.
+
+The root `devEngines` field requires pnpm, so npm commands fail inside the repository. Run `npm login` and `npm deprecate` from another directory.
 
 ## Contributing
 
