@@ -1,6 +1,6 @@
 {
   "name": "anky-ui",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "Copy Anky UI's React AI components into your project.",
   "bin": {
     "anky-ui": "./packages/cli/dist/index.js"

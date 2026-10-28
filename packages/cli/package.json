@@ -1,7 +1,7 @@
 {
   "name": "@anky/cli",
   "private": true,
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "Copy Anky UI's unstyled React AI-UX components into your project.",
   "type": "module",
   "bin": {

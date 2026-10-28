@@ -2,9 +2,9 @@
 
 All notable changes to `@erankushpatil/anky-ui` and the `anky-ui` CLI are documented here. Both packages are released together with the same version number. This project follows [Semantic Versioning](https://semver.org).
 
-## [0.1.1] - 2026-10-28
+## [1.0.0] - 2026-10-28
 
-Documentation only. No code changes.
+First stable release. The public API is now covered by Semantic Versioning: breaking changes will only ship in a new major version. The code is the same as 0.1.0.
 
 - Add use cases to both READMEs, so they also show on the npm pages.
 - Add FAQ entries on using Anky UI with the Vercel AI SDK and alongside chat UIs.
@@ -29,5 +29,5 @@ First public release.
 
 - `add` and `list` commands copy components and their dependencies into your project.
 
-[0.1.1]: https://github.com/ErAnkushPatil/anky-ui/releases/tag/v0.1.1
+[1.0.0]: https://github.com/ErAnkushPatil/anky-ui/releases/tag/v1.0.0
 [0.1.0]: https://github.com/ErAnkushPatil/anky-ui/releases/tag/v0.1.0
