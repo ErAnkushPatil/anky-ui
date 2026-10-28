@@ -1,6 +1,6 @@
 {
     "name": "@erankushpatil/anky-ui",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "React AI UI primitives for inline streaming edits, diffs, ghost text and floating action palettes.",
     "type": "module",
     "main": "./dist/index.cjs",
