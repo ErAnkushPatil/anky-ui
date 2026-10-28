@@ -1,0 +1,19 @@
+{
+  "name": "@anky/cli",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Copy Anky UI's unstyled React AI-UX components into your project.",
+  "type": "module",
+  "bin": {
+    "anky-ui": "./dist/index.js"
+  },
+  "files": ["dist", "registry"],
+  "engines": {
+    "node": ">=18.17"
+  },
+  "scripts": {
+    "build": "node scripts/sync-registry.mjs && tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json"
+  }
+}

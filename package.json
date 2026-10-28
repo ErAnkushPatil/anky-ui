@@ -1,0 +1,60 @@
+{
+  "name": "anky-ui",
+  "version": "0.1.0",
+  "description": "Copy Anky UI's React AI components into your project.",
+  "bin": {
+    "anky-ui": "./packages/cli/dist/index.js"
+  },
+  "files": [
+    "LICENSE",
+    "packages/cli/dist",
+    "packages/cli/registry",
+    "packages/cli/package.json"
+  ],
+  "engines": {
+    "node": ">=18.17"
+  },
+  "scripts": {
+    "build": "pnpm -r build",
+    "build:cli": "pnpm --filter @anky/cli build",
+    "build:core": "pnpm --filter @erankushpatil/anky-ui build",
+    "dev:demo": "pnpm --filter @anky/demo dev",
+    "dev:docs": "pnpm --filter @anky/docs dev",
+    "prepack": "pnpm run build:cli",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "verify": "pnpm -r typecheck && pnpm -r test && pnpm -r build"
+  },
+  "keywords": ["ai ui library", "inline ai", "ambient ai", "copilot ui components", "shadcn ai", "react inline diff streaming", "cursor-like inline prompt react", "ghost text autocomplete textarea", "floating ai action palette", "undo redo ai state react", "nextjs generative ui", "headless ai primitives", "tailwind ai components", "radix floating ai toolbar", "cli"],
+  "license": "ISC",
+  "author": "Ankush Patil",
+  "homepage": "https://github.com/ErAnkushPatil/anky-ui#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ErAnkushPatil/anky-ui.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ErAnkushPatil/anky-ui/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.15.0",
+      "onFail": "download"
+    }
+  },
+  "packageManager": "pnpm@12.15.0",
+  "type": "module",
+  "devDependencies": {
+    "@typescript/typescript6": "^6.0.2",
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "tsup": "^9.0.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}

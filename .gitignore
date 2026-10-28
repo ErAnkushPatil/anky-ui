@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Build output (packages/cli/registry is synced from packages/core/src at build time)
+dist/
+packages/cli/registry/
+*.tsbuildinfo
+*.tgz
+
+# Env and logs
+.env
+.env.*
+!.env.example
+*.log
+
+# OS and editor
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
