@@ -228,9 +228,20 @@ function normalizeEol(text: string): string {
   return text.replace(/\r\n/g, "\n");
 }
 
+/**
+ * Command line for cmd.exe. Package managers are .cmd shims on Windows, which need a shell, and cmd.exe
+ * treats `^` as an escape character, so unquoted `pkg@^1.0.0` would lose its range. Arguments come from
+ * the registry, never from user input.
+ */
+export function windowsCommandLine(command: string, args: readonly string[]): string {
+  return [command, ...args.map((arg) => `"${arg}"`)].join(" ");
+}
+
 const spawnInstaller: Installer = (command, args, cwd) => {
-  // Package managers are .cmd shims on Windows, which require a shell.
-  const result = spawnSync(command, args, { cwd, stdio: "inherit", shell: process.platform === "win32" });
+  const result =
+    process.platform === "win32"
+      ? spawnSync(windowsCommandLine(command, args), { cwd, stdio: "inherit", shell: true })
+      : spawnSync(command, args, { cwd, stdio: "inherit" });
   return result.status ?? 1;
 };
 

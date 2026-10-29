@@ -50,6 +50,7 @@ Anky UI is not a chat UI. For a chat window, use a chat library and add Anky UI 
 - [Styling and Tailwind](#styling-and-tailwind)
 - [CLI](#cli)
 - [Server and Next.js notes](#server-and-nextjs-notes)
+- [Security](#security)
 - [Playground](#playground)
 - [Development](#development)
 - [Contributing](#contributing)
@@ -124,7 +125,7 @@ export function Editor() {
 }
 ```
 
-The endpoint can return raw UTF-8 text or Server-Sent Events whose `data:` fields hold text. Convert provider-specific JSON (OpenAI, Anthropic, ...) to text on your server.
+The endpoint can return raw UTF-8 text or Server-Sent Events whose `data:` fields hold text. Convert provider-specific JSON (OpenAI, Anthropic, ...) to text on your server, for example with `providerTextStream` (see [Server and Next.js notes](#server-and-nextjs-notes)).
 
 ## Components
 
@@ -260,7 +261,7 @@ await ai.mutateWithStream(
 | `isStreaming`, `error` | Stream status and the last failure or user abort. |
 | `canUndo`, `canRedo` | Whether history navigation is possible. |
 | `mutateWithStream(source, transformFn, options?)` | Captures an atomic snapshot, sets `isStreaming`, folds each token in with `transformFn`. On error or abort it rolls back to the snapshot and sets `error`. Returns an outcome and never rejects. |
-| `streamFromEndpoint(body, transformFn, options?)` | POSTs JSON to `endpoint` and streams the response through `mutateWithStream`. |
+| `streamFromEndpoint(body, transformFn, options?)` | POSTs JSON to `endpoint` and streams the response through `mutateWithStream`. Pass `options.init` to add headers (such as `Authorization`), `credentials` and other `fetch` options. |
 | `abort()` | Cancel the in-flight stream and roll back. |
 | `undo()`, `redo()` | Move through history. While streaming, `undo()` cancels the stream. |
 | `accept()` | Commit `currentState` as the new baseline and clear history. |
@@ -299,6 +300,8 @@ const segments: DiffSegment[] = computeDiff("The quick fox", "The swift fox", "w
 //  { type: "insert", value: "swift" }, { type: "equal", value: " fox" }]
 ```
 
+Also available from `@erankushpatil/anky-ui/utils` for server code.
+
 `DiffSegment = { type: "equal" | "insert" | "delete"; value: string }`. Zero-dependency Myers diff with `"word"` and `"char"` modes, a work budget that bounds worst-case latency and memory (pass `{ maxCost }` as the fourth argument), and no module-level state.
 
 ### streamTextReader
@@ -312,7 +315,7 @@ for await (const token of streamTextReader(await fetch(url), { signal: controlle
 }
 ```
 
-Accepts a `ReadableStream<Uint8Array>` or a `Response`. Decodes with `TextDecoderStream` or `TextDecoder`, handles multi-byte characters split across chunks, strips `data:` prefixes automatically for SSE, passes raw text through unchanged, and ends on `[DONE]`. Options: `signal`, `framing` (`"auto"`, `"sse"` or `"raw"`), `doneSentinel`. On abort it cancels the source and rejects with `signal.reason`.
+Accepts a `ReadableStream<Uint8Array>` or a `Response`. Decodes with `TextDecoderStream` or `TextDecoder`, handles multi-byte characters split across chunks, strips `data:` prefixes automatically for SSE, passes raw text through unchanged, and ends on `[DONE]`. Options: `signal`, `framing` (`"auto"`, `"sse"` or `"raw"`), `doneSentinel`. On abort it cancels the source and rejects with `signal.reason`. Also available from `@erankushpatil/anky-ui/utils` for server code.
 
 ## Provider streaming recipes
 
@@ -408,18 +411,42 @@ Components: `selection-palette`, `inline-diff`, `ghost-input`, `use-selection-an
 
 ## Server and Next.js notes
 
-- Components and hooks include the `"use client"` directive. Import them from Client Components in the App Router.
+- `@erankushpatil/anky-ui` ships with the `"use client"` directive, so you can render its components from Server Components and Client Components alike.
+- `@erankushpatil/anky-ui/utils` has no directive and no React import. Use it in server code (route handlers, server actions, edge functions). It exports `computeDiff`, `streamTextReader`, `providerTextReader`, `providerTextStream` and `ProviderStreamError`.
 - Rendering is SSR-safe: selection virtual elements, media queries and platform detection are initialised in `useEffect`, so there are no hydration mismatches.
-- A minimal streaming route handler:
+- A streaming route handler that turns a provider stream into plain text, so the browser never sees your API key:
 
 ```ts
 // app/api/rewrite/route.ts
+import { providerTextStream } from "@erankushpatil/anky-ui/utils";
+
 export async function POST(req: Request) {
   const { prompt, text } = await req.json();
-  const upstream = await callYourModel(prompt, text); // returns a ReadableStream<Uint8Array> of plain text
-  return new Response(upstream, { headers: { "Content-Type": "text/plain; charset=utf-8" } });
+  const upstream = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      stream: true,
+      messages: [{ role: "system", content: prompt }, { role: "user", content: text }],
+    }),
+    signal: req.signal,
+  });
+  if (!upstream.ok) return new Response("Upstream error", { status: 502 });
+  return new Response(providerTextStream(upstream, "openai", { signal: req.signal }), {
+    headers: { "Content-Type": "text/plain; charset=utf-8" },
+  });
 }
 ```
+
+## Security
+
+- **Keep API keys on the server.** Call your model from a route handler (see above) and point the components at that endpoint. Never put provider keys in client code.
+- **AI output is rendered as text.** The components never use `innerHTML` or `dangerouslySetInnerHTML`, so model output cannot inject markup or scripts. If you render accepted text as HTML or Markdown yourself, sanitize it first.
+- **Authenticate your endpoint.** `streamFromEndpoint` forwards `init.headers` (plain objects, `Headers` or tuple arrays) and `init.credentials`, so you can send auth tokens or cookies. Rate-limit the endpoint, because each request costs model tokens.
+- **The CLI only copies files bundled with it** into the directory you choose, and only installs `@floating-ui/react`. It runs no scripts from the network.
+
+Report vulnerabilities privately through [GitHub security advisories](https://github.com/ErAnkushPatil/anky-ui/security/advisories/new). See [SECURITY.md](./SECURITY.md).
 
 ## Playground
 
@@ -489,7 +516,7 @@ Issues and pull requests are welcome at [github.com/ErAnkushPatil/anky-ui](https
 
 **Does it need Tailwind?** No. Tailwind presets are optional, and the CLI copies unstyled components.
 
-**Is it SSR and Next.js safe?** Yes. Client-only browser APIs are touched only inside effects.
+**Is it SSR and Next.js safe?** Yes. The package ships with `"use client"`, so components render from Server Components, and browser APIs are touched only inside effects. Use `@erankushpatil/anky-ui/utils` in server-only code.
 
 **Does it work on touch devices?** Yes. Selection tracking handles `touchend` as well as `mouseup` without double triggers.
 

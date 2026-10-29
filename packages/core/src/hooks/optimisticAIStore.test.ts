@@ -434,4 +434,29 @@ describe("OptimisticAIStore", () => {
       vi.unstubAllGlobals();
     }
   });
+
+  it("streamFromEndpoint keeps caller headers of every HeadersInit shape", async () => {
+    const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) => new Response(streamOf(sse("ok"))));
+    vi.stubGlobal("fetch", fetchMock);
+    try {
+      const store = new OptimisticAIStore("", { endpoint: "/api/rewrite" });
+      const shapes: HeadersInit[] = [
+        new Headers({ Authorization: "Bearer t" }),
+        [["Authorization", "Bearer t"]],
+        { Authorization: "Bearer t" },
+      ];
+      for (const shape of shapes) await store.streamFromEndpoint({}, append, { init: { headers: shape } });
+      await store.streamFromEndpoint({}, append, { init: { headers: { "Content-Type": "text/plain" } } });
+
+      const sent = fetchMock.mock.calls.map(([, init]) => new Headers(init?.headers));
+      for (const headers of sent.slice(0, 3)) {
+        expect(headers.get("Authorization")).toBe("Bearer t");
+        expect(headers.get("Content-Type")).toBe("application/json");
+        expect(headers.get("Accept")).toBe("text/event-stream");
+      }
+      expect(sent[3]!.get("Content-Type")).toBe("text/plain");
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
 });

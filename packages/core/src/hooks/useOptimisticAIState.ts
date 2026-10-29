@@ -235,12 +235,16 @@ export class OptimisticAIStore<T> implements OptimisticAIActions<T> {
     const endpoint = this.endpoint;
     if (!endpoint) throw new TypeError("useOptimisticAIState: `endpoint` option is required for streamFromEndpoint()");
     const { init, ...mutateOptions } = options;
+    // `Headers` accepts every HeadersInit shape; spreading a `Headers` instance or tuple array would drop them.
+    const headers = new Headers(init?.headers);
+    if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json");
+    if (!headers.has("Accept")) headers.set("Accept", "text/event-stream");
     return this.mutateWithStream(
       (signal) =>
         fetch(endpoint, {
           method: "POST",
           ...init,
-          headers: { "Content-Type": "application/json", Accept: "text/event-stream", ...init?.headers },
+          headers,
           body: JSON.stringify(body),
           signal,
         }),

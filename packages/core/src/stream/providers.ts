@@ -114,7 +114,7 @@ export async function* providerTextReader(
 ): AsyncGenerator<string, void, undefined> {
   const extract = EXTRACTORS[provider];
 
-  if (provider === "ai-sdk" && source instanceof Response) {
+  if (provider === "ai-sdk" && typeof Response !== "undefined" && source instanceof Response) {
     // `toTextStreamResponse()` is plain text; the v4 data stream is also text/plain but carries this header.
     const type = source.headers.get("content-type") ?? "";
     if (type.includes("text/plain") && !source.headers.has("x-vercel-ai-data-stream")) {
@@ -124,8 +124,12 @@ export async function* providerTextReader(
   }
 
   let carry = "";
+  // For ai-sdk, the first piece tells SSE (one JSON event per piece) from the v4 data stream (raw chunks).
+  // Decide once: a raw chunk can split mid-record, so a later piece may start with "{" by accident.
+  let lineMode: boolean | undefined;
   for await (const piece of streamTextReader(source, { ...options, framing: provider === "ai-sdk" ? "auto" : "sse" })) {
-    if (provider === "ai-sdk" && !piece.startsWith("{")) {
+    if (provider === "ai-sdk") lineMode ??= !piece.trimStart().startsWith("{");
+    if (lineMode) {
       // v4 data-stream records arrive as raw, newline-delimited chunks.
       carry += piece;
       const lines = carry.split("\n");

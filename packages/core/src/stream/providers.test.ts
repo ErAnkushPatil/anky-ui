@@ -109,6 +109,13 @@ describe("Vercel AI SDK", () => {
     expect(await collect(providerTextReader(res, "ai-sdk"))).toBe("Hello world");
   });
 
+  it("keeps v4 records intact when a chunk boundary falls right before a '{'", async () => {
+    const res = new Response(streamOf(['0:"Hello there friend"\n2:[', '{"a":1}]\n0:"!"\n']), {
+      headers: { "content-type": "text/plain", "x-vercel-ai-data-stream": "v1" },
+    });
+    expect(await collect(providerTextReader(res, "ai-sdk"))).toBe("Hello there friend!");
+  });
+
   it("throws on v4 error records", async () => {
     const res = new Response(streamOf(['3:"boom"\n']), {
       headers: { "content-type": "text/plain", "x-vercel-ai-data-stream": "v1" },

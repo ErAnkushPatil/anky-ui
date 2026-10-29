@@ -1,6 +1,6 @@
 {
     "name": "@erankushpatil/anky-ui",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "React AI UI primitives for inline streaming edits, diffs, ghost text and floating action palettes.",
     "type": "module",
     "main": "./dist/index.cjs",
@@ -16,6 +16,22 @@
           "types": "./dist/index.d.cts",
           "default": "./dist/index.cjs"
         }
+      },
+      "./utils": {
+        "import": {
+          "types": "./dist/utils.d.ts",
+          "default": "./dist/utils.js"
+        },
+        "require": {
+          "types": "./dist/utils.d.cts",
+          "default": "./dist/utils.cjs"
+        }
+      },
+      "./package.json": "./package.json"
+    },
+    "typesVersions": {
+      "*": {
+        "utils": ["./dist/utils.d.ts"]
       }
     },
     "keywords": [
@@ -50,9 +66,12 @@
     },
     "files": ["dist", "README.md", "LICENSE"],
     "sideEffects": false,
+    "engines": {
+      "node": ">=18.17"
+    },
     "scripts": {
-      "build": "tsup src/index.ts --format cjs,esm --dts",
-      "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+      "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsup",
+      "dev": "tsup --watch",
       "test": "vitest run",
       "typecheck": "tsc -p tsconfig.json",
       "prepublishOnly": "pnpm run build"

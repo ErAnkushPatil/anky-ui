@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { main, type CliEnv } from "./cli.js";
+import { main, windowsCommandLine, type CliEnv } from "./cli.js";
 import { detectPackageManager, detectProject, installCommand, ProjectNotFoundError } from "./project.js";
 import { FLOATING_UI, REGISTRY, UnknownItemError, packageName, resolveItems } from "./registry.js";
 import { relativeImports, rewriteImports, targetFileName } from "./transform.js";
@@ -320,5 +320,11 @@ describe("anky-ui", () => {
     const flag = await run(["add", "--force"]);
     expect(flag.code).toBe(1);
     expect(flag.stderr).toMatch(/Unknown option '--force'/);
+  });
+
+  it("quotes installer arguments for cmd.exe so version ranges keep their caret", () => {
+    const [command, args] = installCommand("pnpm", [FLOATING_UI]);
+    expect(windowsCommandLine(command, args)).toBe(`pnpm "add" "${FLOATING_UI}"`);
+    expect(FLOATING_UI).toContain("^");
   });
 });

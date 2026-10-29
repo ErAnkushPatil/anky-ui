@@ -14,6 +14,12 @@ Requires React and React DOM 18 or 19. The only runtime dependency is `@floating
 import { GhostInput, InlineDiff, SelectionPalette, useOptimisticAIState } from "@erankushpatil/anky-ui";
 ```
 
+The package ships with `"use client"`, so the components also render from Next.js Server Components. For server code such as route handlers, import the React-free utilities from `@erankushpatil/anky-ui/utils`:
+
+```ts
+import { computeDiff, providerTextStream, streamTextReader } from "@erankushpatil/anky-ui/utils";
+```
+
 ## Use cases
 
 Use it when AI should edit or suggest text where the user is already working, instead of in a separate chat window.

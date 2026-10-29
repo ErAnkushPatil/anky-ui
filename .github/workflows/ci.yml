@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Typecheck, test and build (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm verify
+
+  cli-min-node:
+    # The published packages declare engines.node >=18.17; build with current Node, run the CLI on the minimum.
+    name: CLI on Node 18.17
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:cli
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18.17.0
+      - name: Run the CLI
+        run: |
+          node packages/cli/dist/index.js --version
+          node packages/cli/dist/index.js list
+          mkdir -p "$RUNNER_TEMP/app/src" && echo '{"name":"app","dependencies":{"react":"^19.0.0"}}' > "$RUNNER_TEMP/app/package.json"
+          node packages/cli/dist/index.js add --all --no-install --cwd "$RUNNER_TEMP/app"
+          test -f "$RUNNER_TEMP/app/src/components/anky/InlineDiff.tsx"
